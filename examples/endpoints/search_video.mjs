@@ -1,0 +1,36 @@
+/**
+ * Search for video by keyword — GET /searchVideo
+ * Run: node examples/endpoints/search_video.mjs --help
+ * Set JSONSCRAPER_TIKTOK_LICENSE_KEY; this example performs one licensed request.
+ */
+import {parseArgs} from 'node:util';
+import {writeFile} from 'node:fs/promises';
+import {TikTok, APIError, TransportError} from '../../src/index.js';
+
+async function main() {
+  const {values} = parseArgs({options:{"keyword": {"type": "string", "default": "appletv"}, "cursor": {"type": "string"}, "count": {"type": "string"}, "cache_timeout": {"type": "string", "default": "60"}, "date_posted": {"type": "string"}, "sort_by": {"type": "string"}, "region": {"type": "string"}, "help": {"type": "boolean", "short": "h"}, "timeout": {"type": "string", "default": "30"}, "retries": {"type": "string", "default": "0"}, "output": {"type": "string"}},allowPositionals:false});
+  if(values.help) {console.log("Search for video by keyword\nGET /searchVideo\n\nEnvironment: JSONSCRAPER_TIKTOK_LICENSE_KEY\nCommon options: --timeout=30, --help\nQuery options:\n  --keyword=VALUE  Any text or keyword\n  --cursor=VALUE  Used for scrolling (pagination) in video items, you can get cursor value from the previous response.\n  --count=VALUE  Number of results you want to get. For example: 10.\n  --cache_timeout=VALUE  Cache timeout in seconds. By default we use caching system with 3600 seconds window to speed up next requests to API. If you want to disable caching, you can set 0 here.\n  --date_posted=VALUE  How long ago was the video posted. Valid values: 'yesterday', 'this-week', 'this-month', 'last-3-months', 'last-6-months' and 'all-time'.\n  --sort_by=VALUE  Sort videos by metrics. Valid values: 'most-liked', 'relevance' or 'date-posted'.\n  --region=VALUE  Region (country) code. Default: US\n\nValues omitted from the command use the public Postman sample defaults. Replace IDs/URLs with your own inputs. Each run makes one request; live requests may consume quota.");return;}
+  const key=process.env.JSONSCRAPER_TIKTOK_LICENSE_KEY?.trim();
+  if(!key) throw new Error('Set JSONSCRAPER_TIKTOK_LICENSE_KEY before making a licensed request');
+  const timeout=Number(values.timeout), retries=Number(values.retries);
+  if(!Number.isFinite(timeout)||timeout<=0||!Number.isInteger(retries)||retries<0||retries>5) throw new Error('Use a positive timeout and 0 to 5 retries');
+  const client=new TikTok(key,{timeout:timeout*1000,retries});
+  const params=Object.fromEntries(Object.entries(values).filter(([key])=>!['help','timeout','retries','output'].includes(key)));
+  const response=await client.search_video(params);
+  if(response instanceof Uint8Array) {
+    if(!values.output) throw new Error('Binary response: provide --output=filename');
+    await writeFile(values.output,response);return;
+  }
+  if(!response || response.status!=='ok' || response.rate_limit_reached) {
+    console.error('The API returned an application error or quota limit. Inspect the envelope below.');
+    console.log(JSON.stringify(response,null,2));process.exitCode=1;return;
+  }
+  const rendered=JSON.stringify(response,null,2)+'\n';
+  if(values.output) await writeFile(values.output,rendered,'utf8');else process.stdout.write(rendered);
+}
+main().catch(error=>{
+  if(error instanceof APIError) console.error(`HTTP ${error.status}. Check access, parameters and quota. Retry-After: ${error.retryAfter||'not provided'}`);
+  else if(error instanceof TransportError) console.error(error.message);
+  else console.error(error.message);
+  process.exitCode=1;
+});
