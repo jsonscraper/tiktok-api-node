@@ -1,0 +1,42 @@
+{
+  "name": "@jsonscraper/tiktok",
+  "version": "0.1.0",
+  "description": "TikTok Scraper API SDK for Node.js and TypeScript \u2014 profiles, media, comments and search",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "python3 tests/contract.py"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jsonscraper/tiktok-api-node.git"
+  },
+  "keywords": [
+    "jsonscraper",
+    "tiktok",
+    "tiktok-scraper",
+    "tiktok-api",
+    "scraper-api",
+    "sdk",
+    "typescript"
+  ],
+  "dependencies": {
+    "json-bigint": "^1.0.0"
+  }
+}
