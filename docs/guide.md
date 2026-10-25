@@ -41,7 +41,7 @@ This repository contains the **TikTok SDK only**. It calls the hosted jsonscrape
 Requirements: **Node.js 20+**.
 
 ```sh
-npm install github:jsonscraper/tiktok-api-node#v0.1.0
+npm install github:jsonscraper/tiktok-api-node#0.1.0
 ```
 
 The GitHub installation above works independently of package registry registration. A public PyPI/npm/Packagist listing is a separate release step; this README does not claim those listings already exist.
